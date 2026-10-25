@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DSP-90</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=VT323&display=swap">
+<style>
+:root{--desk:#cfcbc3;--p1:#3a3c40;--p2:#1a1b1d;--s1:#d6d9dc;--s2:#8e9296;--ink:#141517;--lcd:#0d0803;--on:#ff9f1c;--dim:#3a2208;--glow:#ff9f1c88;--txt:#e8e6e1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--desk:#0f1012}}
+:root[data-theme="dark"]{--desk:#0f1012}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);min-height:100vh;padding:14px 10px;font-family:"Barlow Condensed",system-ui,sans-serif;color:var(--txt)}
+.deck[data-illum="green"]{--on:#5dff8f;--dim:#0f3a1c;--glow:#5dff8f77}
+.deck[data-illum="blue"]{--on:#86dcff;--dim:#10303f;--glow:#86dcff77}
+.deck{max-width:420px;margin:0 auto;border-radius:14px;padding:18px 14px 20px;position:relative;background:linear-gradient(180deg,var(--p1),#2a2c2f 14%,var(--p2));box-shadow:0 0 0 1px #000,0 26px 50px -22px #000c,inset 0 1px 0 #5a5d62}
+.deck::before{content:"";position:absolute;left:14px;right:14px;top:0;height:5px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,#8e9296,#e6e8ea 30%,#9a9ea2 60%,#dcdfe1)}
+.top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;color:var(--s2);font-size:14px;letter-spacing:.14em}
+.top b{font-size:22px;letter-spacing:.12em;color:var(--s1);font-weight:700}
+.lcd{position:relative;background:var(--lcd);border-radius:4px;padding:10px 12px 8px;color:var(--on);font-family:VT323,ui-monospace,monospace;box-shadow:0 0 0 2px #000,0 0 0 4px #54575c,inset 0 0 26px #000}
+.lcd::after{content:"";position:absolute;inset:0;border-radius:4px;pointer-events:none;background:repeating-linear-gradient(0deg,#0000 0 2px,#0006 2px 3px)}
+.lcd-row{display:flex;justify-content:space-between;font-size:18px;line-height:1}
+.ind{padding:1px 6px;border:1px solid var(--dim);color:var(--dim)}
+.ind.act{border-color:var(--on);color:var(--on);text-shadow:0 0 6px var(--glow)}
+#modeName{font-size:clamp(46px,14vw,62px);line-height:.95;margin:8px 0 2px;text-shadow:0 0 14px var(--glow)}
+.lcd-sub{display:flex;justify-content:space-between;font-size:18px;opacity:.85}
+canvas{display:block;width:100%;height:78px;margin-top:6px}
+.axis{display:flex;justify-content:space-between;font-size:15px;opacity:.6}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+.key,.sk,.mini{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;font-weight:700;color:var(--ink);background:linear-gradient(180deg,var(--s1),var(--s2));border-radius:3px;box-shadow:0 2px 0 #000,inset 0 1px 0 #fff9}
+.key{padding:11px 2px 9px;font-size:16px;letter-spacing:.04em;position:relative}
+.key::after{content:"";display:block;width:14px;height:3px;margin:6px auto 0;border-radius:2px;background:#5c5e61}
+.key[aria-pressed="true"]{transform:translateY(2px);box-shadow:inset 0 1px 3px #0007}
+.key[aria-pressed="true"]::after{background:var(--on);box-shadow:0 0 8px var(--on)}
+.key.ill{background:linear-gradient(180deg,#46494d,#303236);color:var(--s1)}
+.key:focus-visible,.sk:focus-visible,.mini:focus-visible,.knob:focus-visible,input:focus-visible,label.file:focus-within{outline:2px solid var(--on);outline-offset:2px}
+.knobrow{display:grid;grid-template-columns:1fr 178px;align-items:center;gap:6px;margin:6px 0 12px}
+.cas{width:100%;max-width:150px}
+.cas .reel{transform-box:fill-box;transform-origin:center}
+.play .reel{animation:spin 2.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.play .reel{animation:none}}
+.lbl{font-size:15px;letter-spacing:.14em;color:var(--s2);margin-bottom:6px}
+.val{font-family:VT323,monospace;font-size:34px;color:var(--on);text-shadow:0 0 8px var(--glow);line-height:1}
+.kw{position:relative;width:178px;height:178px;display:grid;place-items:center}
+.tick{position:absolute;left:calc(50% - 1px);top:0;width:2px;height:7px;transform-origin:1px 89px;background:var(--s2)}
+.knob{position:relative;width:140px;height:140px;border-radius:50%;touch-action:none;cursor:grab;--a:0deg;background:conic-gradient(from 0deg,#f0f1f2,#8a8e92,#e4e6e8,#767a7e,#f0f1f2,#8a8e92,#e4e6e8,#767a7e,#f0f1f2);box-shadow:0 6px 12px #000c,0 0 0 3px #111,inset 0 0 0 2px #fff6}
+.knob::before{content:"";position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a4d52,#17181a 70%);box-shadow:inset 0 2px 4px #000}
+.knob i{position:absolute;inset:0;transform:rotate(var(--a))}
+.knob i::after{content:"";position:absolute;left:calc(50% - 3px);top:8px;width:6px;height:26px;border-radius:3px;background:var(--on);box-shadow:0 0 8px var(--glow)}
+.srck{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sk{padding:10px 2px;font-size:17px;letter-spacing:.1em}
+.sk[aria-pressed="true"]{background:linear-gradient(180deg,#46494d,#26282b);color:var(--on);box-shadow:inset 0 1px 4px #000;text-shadow:0 0 6px var(--glow)}
+.panel{background:#111214;border-radius:4px;padding:12px;box-shadow:inset 0 0 0 1px #3d4044,inset 0 2px 8px #000}
+.panel[hidden]{display:none}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label.file,.mini{padding:9px 14px;font-size:16px;position:relative}
+label.file input{position:absolute;opacity:0;width:1px;height:1px}
+.seek{flex:1 1 150px;display:flex;gap:8px;align-items:center;font-family:VT323,monospace;font-size:20px;color:var(--on)}
+.seek input{flex:1}
+input[type=range]{accent-color:var(--on)}
+.fq{font-family:VT323,monospace;color:var(--on);font-size:54px;text-align:center;text-shadow:0 0 12px var(--glow);line-height:1}
+.pre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.dev{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;padding:11px 8px;cursor:pointer;font-size:18px;border-bottom:1px solid #2c2e31}
+.dev:focus-visible{outline:2px solid var(--on)}
+.led{width:9px;height:9px;border-radius:50%;background:#2c2e31}
+.dev[aria-pressed="true"] .led{background:#5dff8f;box-shadow:0 0 8px #5dff8f}
+.dev small{margin-left:auto;color:var(--s2);font-size:15px}
+.hint{font-size:15px;color:var(--s2);margin:10px 0 0;line-height:1.35}
+</style>
+</head>
+<body>
+<main class="deck" id="deck" data-illum="amber">
+  <div class="top"><b>DSP-90</b><span>DIGITAL SOUND PROCESSOR</span></div>
+  <section class="lcd" aria-live="polite">
+    <div class="lcd-row"><span><span class="ind act" id="iSrc">SİSTEM</span> <span class="ind" id="iBt">BT</span></span><span id="clock">--:--</span></div>
+    <div id="modeName">KAPALI</div>
+    <div class="lcd-sub"><span id="info">HAZIR</span><span id="btName">—</span></div>
+    <canvas id="spec" aria-hidden="true"></canvas>
+    <div class="axis" aria-hidden="true"><span>60</span><span>250</span><span>1K</span><span>4K</span><span>16K</span></div>
+  </section>
+  <div class="keys" id="keys" role="group" aria-label="Ses modu"></div>
+  <div class="knobrow">
+    <div>
+      <svg class="cas" id="cas" viewBox="0 0 120 76" aria-hidden="true"><rect x="2" y="2" width="116" height="72" rx="6" fill="#222428" stroke="#6a6d72" stroke-width="2"/><rect x="14" y="8" width="92" height="22" rx="3" fill="#cfd2d5"/><rect x="38" y="44" width="44" height="22" rx="11" fill="#0d0e10" stroke="#5a5d62"/>
+      <g class="reel"><circle cx="49" cy="55" r="8" fill="#e8e6e1"/><path d="M49 47v16M41 55h16M43 49l12 12" stroke="#222428" stroke-width="2"/></g>
+      <g class="reel"><circle cx="71" cy="55" r="8" fill="#e8e6e1"/><path d="M71 47v16M63 55h16M65 49l12 12" stroke="#222428" stroke-width="2"/></g></svg>
+      <div class="lbl">EFEKT</div><div class="val" id="amtv">50</div>
+    </div>
+    <div class="kw" id="kw"><div class="knob" id="knob" role="slider" tabindex="0" aria-label="Efekt miktarı" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><i></i></div></div>
+  </div>
+  <nav class="srck" style="grid-template-columns:repeat(2,1fr)" role="group" aria-label="Bölüm"><button class="sk" data-p="sys" aria-pressed="true">SİSTEM</button><button class="sk" data-p="bt" aria-pressed="false">BLUETOOTH</button></nav>
+<section class="panel" id="p-sys"><div class="row"><button class="mini" id="pow">EFEKT AÇIK</button></div><p class="hint">Müziği Spotify, YouTube Music ya da başka bir uygulamada çal. Seçtiğin mod telefonun sesine uygulanır, ekran kapalıyken de sürer.</p><p class="hint" id="st"></p></section>
+<section class="panel" id="p-bt" hidden><div id="devs"></div><p class="hint">Telefona bağlı ses çıkışları burada görünür.</p></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const A=window.Android||{setMode(){},setAmount(){},setEnabled(){},devices(){return"[]"}};
+const MODES={off:["KAPALI","KAPALI","EFEKT YOK"],hall:["HALL","HALL","ORTA SALON"],concert:["CONCERT","CONCERT","BÜYÜK SALON"],jazz:["JAZZ","JAZZ CLUB","ORTA ODA"],stadium:["STADIUM","STADIUM","SALON+BAS"],dome:["DOME","DOME","PLATE+PARLAK"],church:["CHURCH","CHURCH","BÜYÜK SALON"]};
+let cur="off",amt=50,on=true,fft=new Array(24).fill(0),last=0;
+function apply(k){cur=k;document.querySelectorAll(".key[data-k]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));$("#modeName").textContent=MODES[k][1];$("#info").textContent=MODES[k][2];A.setMode(k)}
+const keys=$("#keys");
+Object.keys(MODES).forEach(k=>{const b=document.createElement("button");b.className="key";b.dataset.k=k;b.textContent=MODES[k][0];b.setAttribute("aria-pressed",k===cur);b.onclick=()=>apply(k);keys.appendChild(b)});
+const ill=document.createElement("button");ill.className="key ill";ill.textContent="IŞIK";ill.onclick=()=>{const d=$("#deck"),o=["amber","green","blue"];d.dataset.illum=o[(o.indexOf(d.dataset.illum)+1)%3];colors()};keys.appendChild(ill);
+const knob=$("#knob"),kw=$("#kw");
+for(let i=0;i<=10;i++){const t=document.createElement("span");t.className="tick";t.style.transform="rotate("+(-135+i*27)+"deg)";kw.appendChild(t)}
+function setAmt(v){amt=Math.max(0,Math.min(100,Math.round(v)));$("#amtv").textContent=amt;knob.style.setProperty("--a",(amt*2.7-135)+"deg");knob.setAttribute("aria-valuenow",amt);A.setAmount(amt)}
+function drag(e){const r=knob.getBoundingClientRect();let a=Math.atan2(e.clientX-r.left-r.width/2,-(e.clientY-r.top-r.height/2))*180/Math.PI;setAmt((Math.max(-135,Math.min(135,a))+135)/2.7)}
+knob.onpointerdown=e=>{knob.setPointerCapture(e.pointerId);drag(e)};
+knob.onpointermove=e=>{if(knob.hasPointerCapture(e.pointerId))drag(e)};
+knob.onkeydown=e=>{const d={ArrowRight:5,ArrowUp:5,ArrowLeft:-5,ArrowDown:-5}[e.key];if(d){e.preventDefault();setAmt(amt+d)}};
+document.querySelectorAll(".sk").forEach(b=>b.onclick=()=>{document.querySelectorAll(".sk").forEach(x=>x.setAttribute("aria-pressed",x===b));["sys","bt"].forEach(p=>$("#p-"+p).hidden=p!==b.dataset.p)});
+$("#pow").onclick=()=>{on=!on;$("#pow").textContent=on?"EFEKT AÇIK":"EFEKT KAPALI";A.setEnabled(on)};
+window.onFft=a=>{fft=a;last=performance.now()};
+window.onPlaying=b=>$("#cas").classList.toggle("play",b);
+window.onStatus=s=>{$("#st").textContent=s};
+window.onDevices=l=>{const d=$("#devs");d.textContent="";l.forEach(x=>{const b=document.createElement("button"),led=document.createElement("span"),sm=document.createElement("small");b.className="dev";b.setAttribute("aria-pressed",!!x.a);led.className="led";sm.textContent=x.t;b.append(led,document.createTextNode(String(x.n).toUpperCase().slice(0,22)),sm);d.appendChild(b)});
+ const a=l.find(x=>x.a);$("#btName").textContent=a?String(a.n).toUpperCase().slice(0,16):"—";$("#iBt").classList.toggle("act",!!a&&a.t==="BT")};
+setInterval(()=>{const d=new Date();$("#clock").textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")},1000);
+const cv=$("#spec"),g=cv.getContext("2d");let cOn,cDim;
+function colors(){const s=getComputedStyle($("#deck"));cOn=s.getPropertyValue("--on").trim();cDim=s.getPropertyValue("--dim").trim()}
+const B=24,R=10,peaks=new Array(B).fill(0);
+function draw(){const r=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*r)){cv.width=Math.round(w*r);cv.height=Math.round(h*r)}
+ g.setTransform(r,0,0,r,0,0);g.clearRect(0,0,w,h);const gap=3,bw=(w-gap*(B-1))/B,sh=h/R;if(performance.now()-last>800)fft=fft.map(v=>v*.85);
+ for(let i=0;i<B;i++){const n=Math.round((fft[i]||0)*R);peaks[i]=Math.max(n,peaks[i]-.12);
+  for(let j=0;j<R;j++){g.fillStyle=j<n?cOn:cDim;g.fillRect(i*(bw+gap),h-(j+1)*sh,bw,sh-2)}
+  const p=Math.floor(peaks[i]);if(p>n&&p<R){g.fillStyle=cOn;g.fillRect(i*(bw+gap),h-(p+1)*sh,bw,sh-2)}}
+ requestAnimationFrame(draw)}
+colors();draw();apply("off");setAmt(50);
+try{onDevices(JSON.parse(A.devices()))}catch(e){}
+</script>
+</body>
+</html>
